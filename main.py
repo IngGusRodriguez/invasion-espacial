@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+from pygame import mixer
 
 pygame.init()
 
@@ -12,6 +13,11 @@ pygame.display.set_caption("Invasión Espacial")
 icono = pygame.image.load("ovni.png")
 pygame.display.set_icon(icono)
 fondo = pygame.image.load("fondo.jpg")
+
+#Música
+mixer.music.load('MusicaFondo.mp3')
+mixer.music.set_volume(0.3)
+mixer.music.play(-1)
 
 #Variables del jugador
 jugadorimg = pygame.image.load("cohete.png")
@@ -44,6 +50,21 @@ bala_visible = False
 
 # Variable puntaje
 puntaje = 0
+fuente = pygame.font.Font('Fastest.ttf', 32)
+coordenadax = 10
+coordenaday = 10
+
+#Texto final del juego
+fuente_final = pygame.font.Font('Fastest.ttf', 40)
+
+def textofinal():
+    mi_fuente_final = fuente_final.render("JUEGO TERMINADO", True, (255, 255, 255))
+    pantalla.blit(mi_fuente_final, (60, 200))
+
+#Función para mostrar puntaje
+def mostrar_puntaje(x, y):
+    texto = fuente.render(f"Puntaje: {puntaje}", True, (255, 255, 255))
+    pantalla.blit(texto, (x, y))
 
 #Función jugador
 def jugador(x, y):
@@ -86,6 +107,8 @@ while ejecucion:
             if evento.key == pygame.K_RIGHT:
                 jugadorx_cambio = +1
             if evento.key == pygame.K_SPACE:
+                sonido_bala = mixer.Sound('disparo.mp3')
+                sonido_bala.play()
                 if not bala_visible:
                    balax = jugadorx
                    disparar_bala(balax, balay)
@@ -106,6 +129,14 @@ while ejecucion:
 
     # Modificar ubicación del enemigo
     for e in range(cantidad_enemigos):
+
+        #Fin del juego
+        if enemigoy[e] > 500:
+           for k in range (cantidad_enemigos):
+               enemigoy[k] = 1000
+           textofinal()
+           break
+
         enemigox[e] += enemigox_cambio[e]
 
     #Mantener dentro de margenes al enemigo
@@ -119,10 +150,11 @@ while ejecucion:
     #Colisión
         colision = hay_colision(enemigox[e], enemigoy[e], balax, balay)
         if colision:
+            sonido_colision = mixer.Sound('golpe.mp3')
+            sonido_colision.play()
             balay = 500
             bala_visible = False
             puntaje += 1
-            print(puntaje)
             enemigox[e] = random.randint(0, 736)
             enemigoy[e] = random.randint(50, 200)
 
@@ -141,6 +173,8 @@ while ejecucion:
 
 
     jugador(jugadorx, jugadory)
+
+    mostrar_puntaje(coordenadax, coordenaday)
 
 
     #Actualizar
